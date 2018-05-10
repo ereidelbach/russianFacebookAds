@@ -87,7 +87,10 @@ for dir in directories:
             elif value.startswith('Ad ID'):
                 ad_dict['Ad ID'] = value.split('Ad ID ')[1]
             elif value.startswith('Ad Text'):
-                ad_dict['Ad Text'] = value.split('Ad Text ')[1]
+                try:
+                    ad_dict['Ad Text'] = value.split('Ad Text ')[1]
+                except:
+                    ad_dict['Ad Text'] = value.split('Ad Text')[1]
             elif value.startswith('Ad Landing Page'):
                 ad_dict['Ad Landing Page'] = value.split('Ad Landing Page ')[1]
             elif value.startswith('Ad Targeting'):
