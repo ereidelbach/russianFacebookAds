@@ -42,14 +42,14 @@ for dir in directories:
     print("Working in directory: " + dir)
         
     # Read in all PDF Files
-    files = [f for f in os.listdir('.') if f.endswith(('.pdf'))]
+    files = [f for f in os.listdir(dir) if f.endswith(('.pdf'))]
     files = sorted(files)
     
     ad_list = []
     # Read in the ad contained within every file in the directory
     for f in files:
         print('Reading in file: ' + f)
-        ad = read_pdf(f, guess=False)
+        ad = read_pdf(dir + "/" + f, guess=False)
     
         values_list = []
         value = ''
