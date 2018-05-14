@@ -5,9 +5,13 @@ Created on Thu May 10 11:55:23 2018
 
 @author: ejreidelbach
 
-:DESCRIPTION:
-
+:DESCRIPTION:  
+    - This script will read all folders containing PDF data from over 3500 
+    Facebook ads purchased by the Internet Research Agency (1 ad per file) and
+    export the ads into .json files (1 file per month and 1 comprehensive file).
+    
 :REQUIRES:
+    - Tabula  (https://pypi.python.org/pypi/tabula-py)  
    
 :TODO:
 """
