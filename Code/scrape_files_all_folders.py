@@ -22,6 +22,46 @@ import json
 #==============================================================================
 # Function Definitions / Reference Variable Declaration
 #==============================================================================
+# Categories of data that will be found in the `Ad Targeting` field
+sub_categories = ['Location - Living In: ',
+                  'Location: ',
+                  'Interests: ',
+                  'Excluded Connections: ',
+                  'Age: ',
+                  'Language: ',
+                  'Placements: ',
+                  'People Who Match: ',
+                  'Friends of connections: ',
+                  ]
+
+# Create a directory that identifies from where each zip file originated
+source_dict = {'2015-06':'2015-q2.zip',
+               '2015-07':'2015-q3.zip',
+               '2015-08':'2015-q3.zip',
+               '2015-09':'2015-q3.zip',
+               '2015-10':'2015-q4.zip',
+               '2015-11':'2015-q4.zip',
+               '2015-12':'2015-q4.zip',
+               '2016-01':'2016-q1.zip',
+               '2016-02':'2016-q1.zip',
+               '2016-03':'2016-q1.zip',
+               '2016-04':'2016-q2.zip',
+               '2016-05':'2016-q2.zip',
+               '2016-06':'2016-q2.zip',
+               '2016-07':'2016-q3.zip',
+               '2016-08':'2016-q3.zip',
+               '2016-09':'2016-q3.zip',
+               '2016-10':'2016-q4.zip',
+               '2016-11':'2016-q4.zip',
+               '2016-12':'2016-q4.zip',
+               '2017-01':'2017-q1.zip',
+               '2017-02':'2017-q1.zip',
+               '2017-03':'2017-q1.zip',
+               '2017-04':'2017-04.zip',
+               '2017-05':'2017-05.zip',
+               '2017-07':'2017-q3.zip',
+               '2017-08':'2017-q3.zip',
+               }
 
 #==============================================================================
 # Working Code
@@ -52,6 +92,13 @@ for dir in directories:
     for f in files:
         fname = dir.strip('./') + "/" + f
         print('Reading in file: ' + fname)
+        
+        # The file `2016-04/P(1)0003303.pdf` from the file `2016-q2.zip` throws
+        #   an error every time it is read.  We'll avoid this issue by manually
+        #   entering it instead after the file has been written. For now we'll
+        #   simply skip it.
+        if fname == '2016-04/P(1)0003303.pdf':
+            continue
         
         #######################################################################
         # AD INFO ONLY --> No picture info
@@ -103,7 +150,7 @@ for dir in directories:
             # Some Landing Page values have been redacted
             elif value.startswith('Ad Landing Page'):
                 try:
-                    ad_dict['landing_page'] = value.split('Ad Landing Page ')[1]
+                    ad_dict['landing_page'] = value.split('Ad Landing Page ')[1].replace(' ','')
                 except:
                     ad_dict['landing_page'] = "REDACTED"
             elif value.startswith('Ad Targeting'):
@@ -126,54 +173,30 @@ for dir in directories:
                 ad_dict['date_creation'] = value.split('Ad Creation Date ')[1]
             elif value.startswith('Ad End Date'):
                 ad_dict['date_end'] = value.split('Ad End Date ')[1]
-
-        # Search for any subcategories in `Ad Targeting` and extract them
-        sub_categories = []
-        for word in ad_dict['targeting'].split(' '):
-            if ':' in word:
-                sub_categories.append(word.replace(':',''))
-        targeting_list = []
-        for i in range(0,len(sub_categories)):
-            dict_key = 'target_' + sub_categories[i].lower()
-            if i < len(sub_categories) - 1:
+        
+        # Search for any subcategories in `Ad Targeting`
+        cat_list = []
+        for cat in sub_categories:
+            if cat in ad_dict['targeting']:
+                if cat == 'Interests: ':
+                    if 'People Who Match: Interests:' in ad_dict['targeting']:
+                        continue
+                cat_list.append(cat)
+                
+        # For every sub category we found, extract them and make them their
+        #   own entry in the dictionary
+        for i in range(0,len(cat_list)):
+            dict_key = 'target_' + cat_list[i].lower().strip(
+                    ': ').replace('- ','').replace(' ','_')
+            if i < len(cat_list) - 1:
                 ad_dict[dict_key] = ad_dict['targeting'].split(
-                        sub_categories[i] + ': ')[1].split(sub_categories[i+1] + ': ')[0]
+                        cat_list[i])[1].split(cat_list[i+1])[0]
             else:
-                ad_dict[dict_key] = ad_dict['targeting'].split(
-                        sub_categories[i] + ': ')[1]
+                ad_dict[dict_key] = ad_dict['targeting'].split(cat_list[i])[1]
         
         # Remove the original `Ad Targeting` key as it is redundant now
         del ad_dict['targeting']
-        
-        # Create a directory that identifies from where each zip file originated
-        source_dict = {'2015-06':'2015-q2.zip',
-                       '2015-07':'2015-q3.zip',
-                       '2015-08':'2015-q3.zip',
-                       '2015-09':'2015-q3.zip',
-                       '2015-10':'2015-q4.zip',
-                       '2015-11':'2015-q4.zip',
-                       '2015-12':'2015-q4.zip',
-                       '2016-01':'2016-q1.zip',
-                       '2016-02':'2016-q1.zip',
-                       '2016-03':'2016-q1.zip',
-                       '2016-04':'2016-q2.zip',
-                       '2016-05':'2016-q2.zip',
-                       '2016-06':'2016-q2.zip',
-                       '2016-07':'2016-q3.zip',
-                       '2016-08':'2016-q3.zip',
-                       '2016-09':'2016-q3.zip',
-                       '2016-10':'2016-q4.zip',
-                       '2016-11':'2016-q4.zip',
-                       '2016-12':'2016-q4.zip',
-                       '2017-01':'2017-q1.zip',
-                       '2017-02':'2017-q1.zip',
-                       '2017-03':'2017-q1.zip',
-                       '2017-04':'2017-04.zip',
-                       '2017-05':'2017-05.zip',
-                       '2017-08':'2017-q3.zip',
-                       '2017-09':'2017-q3.zip',
-                       }
-        
+                
         # Insert the original source zip file based on the folder
         ad_dict['source_zip'] = source_dict[dir.strip('./')]
          
